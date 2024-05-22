@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDoList Web App</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <body background="image/img new.jpg"></body>
+    <style>
+        .container {
+            max-width: 450px;
+            margin-top: 200px;
+            margin-bottom: 200px;
+            font-family: Arial, Helvetica, sans-serif;
+            border: 1px solid black;
+            padding: 60px;
+            padding-top: 20px;
+            padding-bottom: 80px ;
+            background-color:beige;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-page" class="container">
+        <h2 class="text-center">Login</h2>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">LOGIN</button>
+        </form>
+    </div>
+
+    <div id="main-page" class="container" style="display:none;">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Todo List App</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#" id="todo-list-link">Todo List</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logout-link">LogOut</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div id="todo-list" class="mt-3">
+            <h3>TODO LIST</h3>
+            <ul class="list-group" id="todos"></ul>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginPage = document.getElementById('login-page');
+            const mainPage = document.getElementById('main-page');
+            const loginForm = document.getElementById('login-form');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const todoListLink = document.getElementById('todo-list-link');
+            const logoutLink = document.getElementById('logout-link');
+            const todosContainer = document.getElementById('todos');
+            
+            const correctUsername = 'admin';
+            const correctPassword = '12345';
+            let completedTasksCount = 0;
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+                if (username === correctUsername && password === correctPassword) {
+                    login(loginSuccessCallback);
+                } else {
+                    alert('Invalid credentials');
+                }
+            });
+
+            function login(callback) {
+                callback();
+            }
+
+            function loginSuccessCallback() {
+                loginPage.style.display = 'none';
+                mainPage.style.display = 'block';
+                fetchTodos();
+            }
+
+            todoListLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                fetchTodos();
+            });
+
+            logoutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                mainPage.style.display = 'none';
+                loginPage.style.display = 'block';
+            });
+
+            function fetchTodos() {
+                fetch('https://jsonplaceholder.typicode.com/todos')
+                    .then(response => response.json())
+                    .then(todos => {
+                        displayTodos(todos);
+                    })
+                    .catch(error => console.error('Error fetching todos:', error));
+            }
+
+            function displayTodos(todos) {
+                todosContainer.innerHTML = '';
+                todos.forEach(todo => {
+                    const todoItem = document.createElement('li');
+                    todoItem.className = 'list-group-item';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = todo.completed;
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) {
+                            completedTasksCount++;
+                        } else {
+                            completedTasksCount--;
+                        }
+                        if (completedTasksCount === 5) {
+                            validateCompletedTasks()
+                                .then(() => {
+                                    alert('Congrats! You have successfully completed all five tasks.');
+                                })
+                                .catch(error => console.error('Error:', error));
+                        }
+                    });
+                    todoItem.appendChild(checkbox);
+                    todoItem.appendChild(document.createTextNode(` ${todo.title}`));
+                    todosContainer.appendChild(todoItem);
+                });
+            }
+
+            function validateCompletedTasks() {
+                return new Promise((resolve, reject) => {
+                    if (completedTasksCount === 5) {
+                        resolve();
+                    } else {
+                        reject('Less than 5 tasks completed');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
